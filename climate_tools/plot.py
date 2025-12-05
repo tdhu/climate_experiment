@@ -67,12 +67,17 @@ def plot_temperature_map(
     if "time" in data.dims:
         data = data.isel(time=time_index)
 
-    # Convert to Celsius if in Kelvin
-    if data.max() > 200:  # Likely in Kelvin
+    # Get units from attributes or detect from data
+    units = data.attrs.get("units", "")
+
+    # Convert to Celsius if in Kelvin (check units attribute first)
+    if units.lower() in ("k", "kelvin", "degk"):
         data = data - 273.15
         units = "°C"
-    else:
-        units = data.attrs.get("units", "")
+    elif not units and float(data.max()) > 200:
+        # Fallback: likely in Kelvin if max value > 200 and no units specified
+        data = data - 273.15
+        units = "°C"
 
     data.plot(ax=ax, cmap="RdYlBu_r", add_colorbar=True)
     ax.set_title(f"Temperature ({units})")
