@@ -1,91 +1,54 @@
-# Climate Experiment
+# Climate Analysis
 
-Tools and notebooks for downloading, analyzing, and visualizing climate data.
+Implements the exceedance methodology from Christidis et al. (2023) with live data pulls, clear commenting, and a Doha walkthrough notebook.
 
-## Features
+## Key pieces
 
-- **Climate Data Tools**: Python library for downloading climate data using intake and xarray
-- **Visualization**: Matplotlib-based plotting utilities for climate data
-- **Jupyter Notebooks**: Interactive notebooks for prototyping and experimentation
-- **Modern Package Management**: Uses `uv` for fast, reliable dependency management
-- **Dev Container**: Ready-to-use development environment with VS Code
+- **Package:** `climate_analysis/` with data access (Meteostat stations, CMIP6 via Pangeo), processing (tx01, bias correction), analysis (GEV, probabilities, risk ratios, HRW/HRD).
+- **Config-driven:** `config/sites.yaml` (site metadata), `config/data_catalog.yaml` (remote sources), `config/thresholds.yaml` (default 45/50 °C).
+- **Notebook:** `notebooks/doha_exceedance_walkthrough.ipynb` shows the full flow for Doha International Airport with editable thresholds.
+- **Caching:** Downloads are cached under `data/` to keep reruns fast.
 
-## Project Structure
-
-```
-climate_experiment/
-├── climate_tools/          # Python library for climate data
-│   ├── __init__.py
-│   ├── download.py         # Data downloading utilities
-│   └── plot.py             # Visualization utilities
-├── data/                   # Directory for downloaded climate data
-├── notebooks/              # Jupyter notebooks for experimentation
-├── .devcontainer/          # VS Code dev container configuration
-└── pyproject.toml          # Project configuration and dependencies
-```
-
-## Quick Start
-
-### Installation
-
-1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/):
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
-
-2. Install dependencies:
-   ```bash
-   uv sync --all-extras
-   ```
-
-### Usage
-
-```python
-from climate_tools import ClimateDataDownloader, plot_temperature_map
-
-# Initialize downloader
-downloader = ClimateDataDownloader()
-
-# Download sample data
-ds = downloader.download_sample_data()
-
-# Plot temperature map
-fig = plot_temperature_map(ds)
-```
-
-### Running Jupyter Notebooks
+## Quick start
 
 ```bash
-uv run jupyter lab
+uv sync --all-extras         # install dependencies
+uv run python -c "from climate_analysis.sites import list_sites; print(list_sites())"
+uv run jupyter lab           # open the notebooks
 ```
 
-Then open `notebooks/climate_analysis.ipynb` to get started.
-
-## Development
-
-### Using Dev Container (Recommended)
-
-1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-2. Open this project in VS Code
-3. Click "Reopen in Container" when prompted
-
-### Manual Setup
+## Doha demo (CLI)
 
 ```bash
-# Install all dependencies including dev tools
-uv sync --all-extras
+uv run python - <<'PY'
+from datetime import date
+from climate_analysis.sites import get_site
+from climate_analysis.data_access import StationClient
+from climate_analysis.processing import compute_tx01_from_daily
+from climate_analysis.analysis import return_time_bootstrap
 
-# Run tests
-uv run pytest
-
-# Run linter
-uv run ruff check .
+site = get_site("QAT")
+client = StationClient()
+daily = client.fetch_daily_tmax(site, date(1983,1,1), date(2023,12,31))
+tx01 = compute_tx01_from_daily(daily)
+print(return_time_bootstrap(tx01, threshold_c=50, n_boot=300))
+PY
 ```
 
-## Dependencies
+Or run the end-to-end workflow (station + CMIP6) headlessly:
 
-- **intake**: Data catalog for easy data access
-- **xarray**: N-D labeled arrays and datasets
-- **matplotlib**: Visualization library
-- **netcdf4**: NetCDF file support
-- **dask**: Parallel computing support
+```bash
+uv run python scripts/doha_quickstart.py
+```
+
+## Running the notebook
+
+1. `uv run jupyter lab`
+2. Open `notebooks/doha_exceedance_walkthrough.ipynb`
+3. Execute cells; thresholds are editable in the first cell.
+
+## Notes
+
+- CMIP6 data are pulled lazily through the Pangeo intake catalog to reduce transfer size; station data come from Meteostat (no API key).
+- All public functions include docstrings and inline comments explaining the statistical steps for SMEs.
+- Some CMIP6 catalogs lack NAT (hist-nat) daily tasmax. The CMIP6 client will fall back to `historical` as a proxy for NAT and warn; swap in a catalog with true NAT runs when available for faithful risk ratios.

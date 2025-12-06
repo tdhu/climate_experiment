@@ -1,0 +1,7 @@
+default_thresholds_c:
+  - 45.0
+  - 50.0
+notes: |
+  Default thresholds follow the paper's exceedance analysis. Users can add more
+  thresholds (e.g., 47.5) through the CLI/notebook inputs; validation ensures
+  reasonable values (e.g., 40–60 °C) to avoid unrealistic requests.

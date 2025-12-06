@@ -1,0 +1,57 @@
+cmip6:
+  esgf:
+    index_url: "https://esgf-node.llnl.gov/esg-search"
+    distrib: true
+    replica: false
+    latest: true
+    format: "application/solr+json"
+    project: "CMIP6"
+    activity_id: "DAMIP"
+    experiments:
+      nat: "hist-nat"
+      all: "historical"
+      scenario: "ssp245"
+    variable_id: "tasmax"
+    table_id: "day"
+    preferred_grid_labels:
+      - "gn"
+      - "gr"
+    default_models:
+      - ACCESS-CM2
+      - ACCESS-ESM1-5
+      - BCC-CSM2-MR
+      - CNRM-CM6-1
+      - CanESM5
+      - FGOALS-g3
+      - GFDL-ESM4
+      - IPSL-CM6A-LR
+      - MIROC6
+      - MRI-ESM2-0
+      - NorESM2-LM
+    paging:
+      limit: 500
+      max_pages: 200
+    auth:
+      # If a node requires authentication, set either an OpenID (and rely on
+      # esgf-pyclient cookie retrieval) or allow ~/.netrc to provide
+      # credentials. Leave empty for anonymous access where permitted.
+      openid: ""
+      netrc_path: "~/.netrc"
+    notes: |
+      ESGF provides DAMIP hist-nat and ALL/SSP data. We query by model,
+      experiment, table, and variable, then pick OPeNDAP access URLs when
+      available to avoid downloading full files. Grid labels are preferred in
+      the order listed.
+
+reanalysis:
+  twenty_cr:
+    description: "20CRv3 Tmax; provides historical context for tx01 and trend maps."
+    example_odata: "https://psl.noaa.gov/thredds/dodsC/20CRv3/derived/prmsl.ctl"  # placeholder endpoint for structure; replace with Tmax daily path when available.
+    notes: "Endpoint kept configurable; code treats any OpenDAP/THREDDS URL exposing daily tasmax."
+
+stations:
+  provider: "meteostat"
+  notes: |
+    Meteostat offers free daily station data without API keys. Station lookups
+    are by ID (preferred) or nearest lat/lon match from config/sites.yaml. Doha
+    (QAT) is pre-wired with station 41170.

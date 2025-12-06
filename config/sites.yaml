@@ -1,0 +1,110 @@
+default_data_dir: data
+sites:
+  - id: ARE
+    name: "Abu Dhabi Intl"
+    latitude: 24.43
+    longitude: 54.65
+    record_tmax_c: 49.2
+    record_year: 1999
+    obs_period_start: 1983
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: DZA
+    name: "Ech Cheliff"
+    latitude: 36.21
+    longitude: 1.33
+    record_tmax_c: 48.0
+    record_year: 2015
+    obs_period_start: 1957
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: EGY
+    name: "Minya"
+    latitude: 28.08
+    longitude: 30.73
+    record_tmax_c: 48.6
+    record_year: 1992
+    obs_period_start: 1957
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: ESP
+    name: "Moron de la Frontera"
+    latitude: 37.16
+    longitude: -5.62
+    record_tmax_c: 46.6
+    record_year: 1967
+    obs_period_start: 1955
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: ISR
+    name: "Beer Sheva"
+    latitude: 31.25
+    longitude: 34.82
+    record_tmax_c: 44.9
+    record_year: 2002
+    obs_period_start: 1951
+    obs_period_end: 2016
+    meteostat_id: null
+  - id: JOR
+    name: "King Hussein"
+    latitude: 32.36
+    longitude: 36.26
+    record_tmax_c: 44.8
+    record_year: 2010
+    obs_period_start: 1959
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: LBY
+    name: "Hon"
+    latitude: 29.12
+    longitude: 15.95
+    record_tmax_c: 47.6
+    record_year: 2010
+    obs_period_start: 1956
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: MAR
+    name: "Menara"
+    latitude: 31.61
+    longitude: -8.04
+    record_tmax_c: 49.6
+    record_year: 2012
+    obs_period_start: 1957
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: QAT
+    name: "Doha International Airport"
+    latitude: 25.26
+    longitude: 51.56
+    record_tmax_c: 50.4
+    record_year: 2010
+    obs_period_start: 1983
+    obs_period_end: 2021
+    meteostat_id: "41170"
+  - id: SAU
+    name: "Qaisumah"
+    latitude: 28.33
+    longitude: 46.12
+    record_tmax_c: 50.8
+    record_year: 2007
+    obs_period_start: 1966
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: TUN
+    name: "Kairouan"
+    latitude: 35.67
+    longitude: 10.1
+    record_tmax_c: 48.3
+    record_year: 2018
+    obs_period_start: 1957
+    obs_period_end: 2021
+    meteostat_id: null
+  - id: TUR
+    name: "Edirne"
+    latitude: 41.67
+    longitude: 26.57
+    record_tmax_c: 44.1
+    record_year: 2007
+    obs_period_start: 1955
+    obs_period_end: 2021
+    meteostat_id: null
