@@ -14,6 +14,7 @@ dependencies = [
     "cftime>=1.6.0",
     "dask[complete]>=2024.9.0",
     "fsspec>=2024.0.0",
+    "globus-sdk>=3.39.0",
     "gcsfs>=2024.6.1",
     "h5netcdf>=1.3.0",
     "intake>=2.0.0",

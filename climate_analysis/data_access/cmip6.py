@@ -13,6 +13,7 @@ import pandas as pd
 import xarray as xr
 
 from climate_analysis.config import load_data_catalog
+from climate_analysis.data_access.esgf_auth import build_authenticated_session
 from climate_analysis.data_access.esgf_opendap import open_point_timeseries
 from climate_analysis.data_access.esgf_search import ESGFSearchConfig, search_files
 
@@ -34,6 +35,10 @@ class CMIP6Client:
     ):
         cfg = config or self._load_default_config()
         self.config = cfg if isinstance(cfg, CMIP6Config) else self._coerce_config(cfg)
+        self.session = build_authenticated_session(
+            cfg_client_id=self.config.esgf.auth_client_id,
+            cfg_scopes=self.config.esgf.auth_scopes,
+        )
 
     @staticmethod
     def _load_default_config() -> CMIP6Config:
@@ -43,6 +48,7 @@ class CMIP6Client:
     @staticmethod
     def _coerce_config(raw: dict) -> CMIP6Config:
         esgf_raw = raw["esgf"]
+        auth_raw = esgf_raw.get("auth", {}) if isinstance(esgf_raw, dict) else {}
         esgf_cfg = ESGFSearchConfig(
             index_url=esgf_raw["index_url"],
             distrib=bool(esgf_raw.get("distrib", True)),
@@ -58,6 +64,8 @@ class CMIP6Client:
             limit=int(esgf_raw.get("paging", {}).get("limit", 500)),
             max_pages=int(esgf_raw.get("paging", {}).get("max_pages", 200)),
             shards=esgf_raw.get("shards"),
+            auth_client_id=auth_raw.get("globus_client_id"),
+            auth_scopes=auth_raw.get("scopes", []),
         )
         return CMIP6Config(
             esgf=esgf_cfg,
@@ -84,7 +92,9 @@ class CMIP6Client:
         rows = []
         for model in model_sel:
             for exp in exp_sel:
-                records = search_files(self.config.esgf, model=model, experiment=exp)
+                records = search_files(
+                    self.config.esgf, model=model, experiment=exp, session=self.session
+                )
                 for rec in records:
                     rows.append(
                         {
@@ -110,10 +120,12 @@ class CMIP6Client:
         """Open and concatenate a member's point timeseries via ESGF.
 
         Downloads are limited to the requested point/time window using
-        OPeNDAP where possible.
+        HTTPServer streaming via fsspec (primary path).
         """
 
-        records = search_files(self.config.esgf, model=model, experiment=experiment)
+        records = search_files(
+            self.config.esgf, model=model, experiment=experiment, session=self.session
+        )
         if not records:
             raise ValueError(f"No ESGF entries for {model} {experiment} {variable_id}")
 
@@ -131,7 +143,8 @@ class CMIP6Client:
 
         # Sort by datetime_start if present so concatenation is ordered.
         def _sort_key(rec):
-            return rec.datetime_start or ""
+            svc_rank = 0 if rec.access.service == "HTTPServer" else 1
+            return (svc_rank, rec.datetime_start or "")
 
         member_records.sort(key=_sort_key)
 
@@ -139,7 +152,6 @@ class CMIP6Client:
         for rec in member_records:
             time_start = f"{start_year}-01-01"
             time_end = f"{end_year}-12-31"
-            engine = "pydap" if rec.access.service == "OPENDAP" else None
             da = open_point_timeseries(
                 url=rec.access.url,
                 variable_id=variable_id,
@@ -147,12 +159,12 @@ class CMIP6Client:
                 longitude=longitude,
                 time_start=time_start,
                 time_end=time_end,
-                engine=engine,
+                session=self.session,
             )
             slices.append(da)
 
         combined = xr.concat(slices, dim="time") if len(slices) > 1 else slices[0]
-        combined = combined.sel(time=slice(f"{start_year}-01-01", f"{end_year}-12-31"))
+        combined = combined.sortby("time")
         return combined
 
     def open_point_timeseries(

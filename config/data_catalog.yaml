@@ -1,8 +1,8 @@
 cmip6:
   esgf:
-    index_url: "https://esgf-node.llnl.gov/esg-search"
+    index_url: "https://esgf-data.dkrz.de/esg-search"
     distrib: true
-    replica: false
+    replica: true
     latest: true
     format: "application/solr+json"
     project: "CMIP6"
@@ -32,11 +32,13 @@ cmip6:
       limit: 500
       max_pages: 200
     auth:
-      # If a node requires authentication, set either an OpenID (and rely on
-      # esgf-pyclient cookie retrieval) or allow ~/.netrc to provide
-      # credentials. Leave empty for anonymous access where permitted.
-      openid: ""
-      netrc_path: "~/.netrc"
+      # Preferred: set ESGF_GLOBUS_CLIENT_ID env var; this field is a fallback.
+      globus_client_id: "075e9be7-7b7e-4156-b6b8-0aa549e2f087"
+      scopes:
+        - "urn:globus:auth:scope:search.api.globus.org:search"
+        - "openid"
+        - "profile"
+        - "email"
     notes: |
       ESGF provides DAMIP hist-nat and ALL/SSP data. We query by model,
       experiment, table, and variable, then pick OPeNDAP access URLs when

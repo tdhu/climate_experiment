@@ -49,6 +49,20 @@ uv run python scripts/doha_quickstart.py
 
 ## Notes
 
-- CMIP6 data are pulled lazily through the Pangeo intake catalog to reduce transfer size; station data come from Meteostat (no API key).
-- All public functions include docstrings and inline comments explaining the statistical steps for SMEs.
-- Some CMIP6 catalogs lack NAT (hist-nat) daily tasmax. The CMIP6 client will fall back to `historical` as a proxy for NAT and warn; swap in a catalog with true NAT runs when available for faithful risk ratios.
+- CMIP6 via ESGF HTTPServer (primary path). We search the DKRZ index, pick HTTPServer URLs, download NetCDFs to `.cache/esgf/` with resume support, then slice locally. Files are reused on reruns and are git-ignored.
+- Station data come from Meteostat (no API key).
+- ESGF/Globus auth: set `ESGF_GLOBUS_CLIENT_ID` (or fill `cmip6.esgf.auth.globus_client_id`), then:
+  ```bash
+  uv run python -c "from climate_analysis.data_access.esgf_auth import build_authenticated_session; build_authenticated_session()"
+  ```
+  Paste the auth code when prompted. Tokens land in `.cache/globus_tokens.json` (git-ignored) and auto-refresh.
+- Default model/site workflow:
+  ```bash
+  uv run python scripts/doha_quickstart.py           # QAT site, CanESM5 model
+  ```
+  Or programmatic:
+  ```python
+  from climate_analysis.workflows import analyze_site_exceedance
+  res = analyze_site_exceedance("QAT", model="CanESM5")
+  ```
+- Large downloads: Each CanESM5 daily tasmax file is ~1–2 GB. If interrupted, rerun; downloads resume. Cache is at `.cache/esgf/`.

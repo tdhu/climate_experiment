@@ -205,6 +205,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Auth tokens and local cache
+.cache/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
