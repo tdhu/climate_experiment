@@ -66,3 +66,7 @@ uv run python scripts/doha_quickstart.py
   res = analyze_site_exceedance("QAT", model="CanESM5")
   ```
 - Large downloads: Each CanESM5 daily tasmax file is ~1–2 GB. If interrupted, rerun; downloads resume. Cache is at `.cache/esgf/`.
+- Bulk download (ALL/NAT/SSP tasmax for default models):
+  ```bash
+  uv run python scripts/download_cmip6_bulk.py
+  ```
